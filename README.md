@@ -203,19 +203,19 @@ Run the scripts in the following order to simulate a user flow. No arguments are
 
 1.  **Register Admin:**
     ```bash
-    python api_tests/auth_register.py
+    python api_tests/A1.auth_register.py
     ```
     *Creates a user and saves tokens to `secrets.json`.*
 
 2.  **Create User:**
     ```bash
-    python api_tests/user_create.py
+    python api_tests/B1.user_create.py
     ```
     *Uses the saved Admin Token to create a new user.*
 
 3.  **Get All Users:**
     ```bash
-    python api_tests/user_get_all.py
+    python api_tests/B2.user_get_all.py
     ```
 
 4.  **Other Operations:**
