@@ -1,9 +1,7 @@
 # Stage 1: Builder
-# We use the specific version requested: 1.25.4-alpine
 FROM golang:1.25.4-alpine AS builder
 
 # Install git. 
-# (GCC/Musl is not strictly needed since we use pure Go SQLite, but good practice for other deps)
 RUN apk add --no-cache git
 
 # Set the Current Working Directory inside the container

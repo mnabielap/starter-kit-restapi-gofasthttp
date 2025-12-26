@@ -14,8 +14,6 @@ import (
 	"github.com/mnabielap/starter-kit-restapi-gofasthttp/internal/repository"
 	"github.com/mnabielap/starter-kit-restapi-gofasthttp/internal/service"
 	"github.com/valyala/fasthttp"
-
-	// Import generated docs so swagger can load them
 	_ "github.com/mnabielap/starter-kit-restapi-gofasthttp/docs"
 )
 

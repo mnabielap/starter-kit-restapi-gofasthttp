@@ -19,10 +19,8 @@ type Config struct {
 	JWTRefreshExpirationDays   time.Duration
 }
 
-// AppConfig holds the loaded configuration
 var AppConfig *Config
 
-// LoadConfig loads environment variables from .env file
 func LoadConfig() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Warning: .env file not found, using system environment variables.")
@@ -34,7 +32,7 @@ func LoadConfig() {
 
 	AppConfig = &Config{
 		Port:                       port,
-		Env:                        getEnv("NODE_ENV", "development"),
+		Env:                        getEnv("APP_ENV", "development"),
 		DBDriver:                   getEnv("DB_DRIVER", "sqlite"),
 		DBSource:                   getEnv("DB_SOURCE", "app.db"),
 		JWTSecret:                  getEnv("JWT_SECRET", "secret"),

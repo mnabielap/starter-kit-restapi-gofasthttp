@@ -112,7 +112,7 @@ docker volume create restapi_gofasthttp_media_volume
 Create a `.env.docker` file. This config tells the app to use Postgres.
 ```ini
 PORT=5005
-NODE_ENV=production
+APP_ENV=production
 DB_DRIVER=postgres
 # Hostname 'postgres-container' matches the name we give the DB container below
 DB_SOURCE=host=postgres-container user=restapi password=secret dbname=restapidb port=5432 sslmode=disable
@@ -233,7 +233,7 @@ Run the scripts in the following order to simulate a user flow. No arguments are
 | Variable | Description | Example (SQLite) | Example (Postgres) |
 | :--- | :--- | :--- | :--- |
 | `PORT` | Server Port | `3000` | `5005` |
-| `NODE_ENV` | Environment | `development` | `production` |
+| `APP_ENV` | Environment | `development` | `production` |
 | `DB_DRIVER` | Database Type | `sqlite` | `postgres` |
 | `DB_SOURCE` | DSN / File Path | `app.db` | `host=postgres...` |
 | `JWT_SECRET` | Secret for signing tokens | `secret123` | `super_secure_key` |
