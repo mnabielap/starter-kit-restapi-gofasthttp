@@ -34,6 +34,7 @@ func (h *AuthHandler) Register(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	// Validate Struct
 	if validationErrors := utils.ValidateStruct(&user); validationErrors != nil {
 		utils.WriteJSON(ctx, fasthttp.StatusBadRequest, map[string]interface{}{
 			"status": "error",
@@ -41,6 +42,8 @@ func (h *AuthHandler) Register(ctx *fasthttp.RequestCtx) {
 		})
 		return
 	}
+
+	user.Role = "user"
 
 	createdUser, tokens, err := h.authService.Register(&user)
 	if err != nil {

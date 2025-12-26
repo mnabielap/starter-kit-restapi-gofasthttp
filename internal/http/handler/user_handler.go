@@ -21,7 +21,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 
 // CreateUser godoc
 // @Summary      Create a new user (Admin)
-// @Description  Create a new user. Requires admin role.
+// @Description  Create a new user manually. Requires 'admin' role.
 // @Tags         Users
 // @Accept       json
 // @Produce      json
@@ -29,6 +29,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 // @Param        user body model.User true "User Data"
 // @Success      201  {object}  model.UserResponse
 // @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
 // @Router       /users [post]
 func (h *UserHandler) CreateUser(ctx *fasthttp.RequestCtx) {
 	var user model.User
@@ -56,7 +57,7 @@ func (h *UserHandler) CreateUser(ctx *fasthttp.RequestCtx) {
 
 // GetUsers godoc
 // @Summary      Get all users
-// @Description  Get a paginated list of users. Requires admin role.
+// @Description  Get a paginated list of users. Requires 'admin' role.
 // @Tags         Users
 // @Accept       json
 // @Produce      json
@@ -64,7 +65,7 @@ func (h *UserHandler) CreateUser(ctx *fasthttp.RequestCtx) {
 // @Param        page  query    int  false  "Page number" default(1)
 // @Param        limit query    int  false  "Page limit"  default(10)
 // @Success      200   {object} map[string]interface{}
-// @Failure      500   {object} utils.Response
+// @Failure      403   {object} utils.Response
 // @Router       /users [get]
 func (h *UserHandler) GetUsers(ctx *fasthttp.RequestCtx) {
 	page, _ := strconv.Atoi(string(ctx.QueryArgs().Peek("page")))
@@ -92,7 +93,7 @@ func (h *UserHandler) GetUsers(ctx *fasthttp.RequestCtx) {
 
 // GetUser godoc
 // @Summary      Get a user by ID
-// @Description  Get details of a specific user. Requires admin role.
+// @Description  Get details of a specific user. Requires 'admin' role.
 // @Tags         Users
 // @Accept       json
 // @Produce      json
@@ -100,6 +101,7 @@ func (h *UserHandler) GetUsers(ctx *fasthttp.RequestCtx) {
 // @Param        userId path      int  true  "User ID"
 // @Success      200    {object}  model.UserResponse
 // @Failure      404    {object}  utils.Response
+// @Failure      403    {object}  utils.Response
 // @Router       /users/{userId} [get]
 func (h *UserHandler) GetUser(c *routing.Context) error {
 	id, err := strconv.Atoi(c.Param("userId"))
@@ -120,7 +122,7 @@ func (h *UserHandler) GetUser(c *routing.Context) error {
 
 // UpdateUser godoc
 // @Summary      Update a user
-// @Description  Update user details. Requires admin role.
+// @Description  Update user details. Requires 'admin' role.
 // @Tags         Users
 // @Accept       json
 // @Produce      json
@@ -128,7 +130,7 @@ func (h *UserHandler) GetUser(c *routing.Context) error {
 // @Param        userId path      int  true  "User ID"
 // @Param        user   body      map[string]interface{} true "Update Data"
 // @Success      200    {object}  model.UserResponse
-// @Failure      400    {object}  utils.Response
+// @Failure      403    {object}  utils.Response
 // @Router       /users/{userId} [patch]
 func (h *UserHandler) UpdateUser(c *routing.Context) error {
 	id, err := strconv.Atoi(c.Param("userId"))
@@ -155,14 +157,14 @@ func (h *UserHandler) UpdateUser(c *routing.Context) error {
 
 // DeleteUser godoc
 // @Summary      Delete a user
-// @Description  Soft delete a user by ID. Requires admin role.
+// @Description  Soft delete a user by ID. Requires 'admin' role.
 // @Tags         Users
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        userId path      int  true  "User ID"
 // @Success      204
-// @Failure      404    {object}  utils.Response
+// @Failure      403    {object}  utils.Response
 // @Router       /users/{userId} [delete]
 func (h *UserHandler) DeleteUser(c *routing.Context) error {
 	id, err := strconv.Atoi(c.Param("userId"))

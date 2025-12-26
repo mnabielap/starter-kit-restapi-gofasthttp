@@ -10,27 +10,29 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-// AuthMiddleware handles JWT verification and Role-Based Access Control
+// AuthMiddleware handles JWT verification and Role-Based Access Control (RBAC)
 func AuthMiddleware(tokenService *service.TokenService, requiredRoles ...string) routing.Handler {
 	return func(c *routing.Context) error {
+		// 1. Check Authorization Header
 		authHeader := string(c.Request.Header.Peek("Authorization"))
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			utils.WriteError(c.RequestCtx, fasthttp.StatusUnauthorized, "Please authenticate")
+			utils.WriteError(c.RequestCtx, fasthttp.StatusUnauthorized, "Missing or invalid Authorization header")
 			c.Abort()
 			return nil
 		}
 
+		// 2. Verify Token
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		claims, err := tokenService.VerifyToken(tokenString)
 
 		// Validate token validity and type (must be access token)
 		if err != nil || claims.Type != model.TokenTypeAccess {
-			utils.WriteError(c.RequestCtx, fasthttp.StatusUnauthorized, "Please authenticate")
+			utils.WriteError(c.RequestCtx, fasthttp.StatusUnauthorized, "Invalid or expired token")
 			c.Abort()
 			return nil
 		}
 
-		// Role Based Access Control (RBAC)
+		// 3. RBAC Check (If roles are specified)
 		if len(requiredRoles) > 0 {
 			hasRole := false
 			for _, role := range requiredRoles {
@@ -40,13 +42,13 @@ func AuthMiddleware(tokenService *service.TokenService, requiredRoles ...string)
 				}
 			}
 			if !hasRole {
-				utils.WriteError(c.RequestCtx, fasthttp.StatusForbidden, "Forbidden")
+				utils.WriteError(c.RequestCtx, fasthttp.StatusForbidden, "Forbidden: Insufficient permissions")
 				c.Abort()
 				return nil
 			}
 		}
 
-		// Store user info in context for handlers to use
+		// 4. Store user info in context
 		c.Set("userID", claims.UserID)
 		c.Set("userRole", claims.Role)
 

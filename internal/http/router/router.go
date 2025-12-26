@@ -26,18 +26,19 @@ func SetupRouter(
 
 	router.Use(middleware.Logger)
 
+	// Swagger Docs
 	router.Get("/swagger/*", adaptHandler(fasthttpSwagger.WrapHandler(fasthttpSwagger.DeepLinking(true))))
 
 	v1 := router.Group("/v1")
 
-	// Auth Routes
+	// --- Auth Routes (Public) ---
 	auth := v1.Group("/auth")
 	auth.Post("/register", adaptHandler(authHandler.Register))
 	auth.Post("/login", adaptHandler(authHandler.Login))
 	auth.Post("/logout", adaptHandler(authHandler.Logout))
 	auth.Post("/refresh-tokens", adaptHandler(authHandler.RefreshTokens))
 
-	// User Routes
+	// --- User Routes (Protected: Admin Only) ---
 	users := v1.Group("/users")
 	users.Use(middleware.AuthMiddleware(tokenService, "admin"))
 	
