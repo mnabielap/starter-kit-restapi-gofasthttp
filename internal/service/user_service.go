@@ -59,8 +59,18 @@ func (s *UserService) GetUserByID(id uint) (*model.User, error) {
 	return user, nil
 }
 
-func (s *UserService) GetUsers(page, limit int) ([]model.UserResponse, int64, error) {
-	users, total, err := s.userRepo.FindAll(page, limit)
+func (s *UserService) GetUsers(page, limit int, search, scope, role, sortBy string) ([]model.UserResponse, int64, error) {
+	// Construct Filter
+	filter := repository.UserFilter{
+		Page:   page,
+		Limit:  limit,
+		Search: search,
+		Scope:  scope,
+		Role:   role,
+		SortBy: sortBy,
+	}
+
+	users, total, err := s.userRepo.FindAll(filter)
 	if err != nil {
 		return nil, 0, err
 	}

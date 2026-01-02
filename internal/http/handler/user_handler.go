@@ -57,19 +57,30 @@ func (h *UserHandler) CreateUser(ctx *fasthttp.RequestCtx) {
 
 // GetUsers godoc
 // @Summary      Get all users
-// @Description  Get a paginated list of users. Requires 'admin' role.
+// @Description  Get a paginated list of users with search, filter, and sort options. Requires 'admin' role.
 // @Tags         Users
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        page  query    int  false  "Page number" default(1)
-// @Param        limit query    int  false  "Page limit"  default(10)
-// @Success      200   {object} map[string]interface{}
-// @Failure      403   {object} utils.Response
+// @Param        page    query    int     false  "Page number" default(1)
+// @Param        limit   query    int     false  "Page limit"  default(10)
+// @Param        search  query    string  false  "Search term"
+// @Param        scope   query    string  false  "Search scope (all, name, email, id)"
+// @Param        role    query    string  false  "Filter by role"
+// @Param        sortBy  query    string  false  "Sort format field:order (e.g. name:asc)"
+// @Success      200     {object} map[string]interface{}
+// @Failure      403     {object} utils.Response
 // @Router       /users [get]
 func (h *UserHandler) GetUsers(ctx *fasthttp.RequestCtx) {
+	// Parsing Query Parameters
 	page, _ := strconv.Atoi(string(ctx.QueryArgs().Peek("page")))
 	limit, _ := strconv.Atoi(string(ctx.QueryArgs().Peek("limit")))
+	search := string(ctx.QueryArgs().Peek("search"))
+	scope := string(ctx.QueryArgs().Peek("scope"))
+	role := string(ctx.QueryArgs().Peek("role"))
+	sortBy := string(ctx.QueryArgs().Peek("sortBy"))
+
+	// Defaults
 	if page < 1 {
 		page = 1
 	}
@@ -77,7 +88,7 @@ func (h *UserHandler) GetUsers(ctx *fasthttp.RequestCtx) {
 		limit = 10
 	}
 
-	users, total, err := h.userService.GetUsers(page, limit)
+	users, total, err := h.userService.GetUsers(page, limit, search, scope, role, sortBy)
 	if err != nil {
 		utils.WriteError(ctx, fasthttp.StatusInternalServerError, err.Error())
 		return

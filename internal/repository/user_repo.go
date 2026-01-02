@@ -2,6 +2,9 @@ package repository
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/mnabielap/starter-kit-restapi-gofasthttp/internal/model"
 	"gorm.io/gorm"
@@ -42,19 +45,86 @@ func (r *userRepo) FindByID(id uint) (*model.User, error) {
 	return &user, nil
 }
 
-func (r *userRepo) FindAll(page, limit int) ([]model.User, int64, error) {
+func (r *userRepo) FindAll(filter UserFilter) ([]model.User, int64, error) {
 	var users []model.User
 	var total int64
 
-	offset := (page - 1) * limit
+	// Start query construction
+	query := r.db.Model(&model.User{})
 
-	// Count total records for pagination metadata
-	if err := r.db.Model(&model.User{}).Count(&total).Error; err != nil {
+	// 1. Search Logic
+	if filter.Search != "" {
+		searchLike := "%" + filter.Search + "%"
+		switch filter.Scope {
+		case "name":
+			query = query.Where("name LIKE ?", searchLike)
+		case "email":
+			query = query.Where("email LIKE ?", searchLike)
+		case "id":
+			// Exact match for ID
+			if id, err := strconv.Atoi(filter.Search); err == nil {
+				query = query.Where("id = ?", id)
+			} else {
+				// If scope is ID but value is not a number, return empty or fail safe
+				query = query.Where("1 = 0")
+			}
+		default: // "all" or empty
+			// Search in Name, Email, or ID
+			sql := "name LIKE ? OR email LIKE ?"
+			args := []interface{}{searchLike, searchLike}
+			
+			// If search term is numeric, include ID search
+			if id, err := strconv.Atoi(filter.Search); err == nil {
+				sql += " OR id = ?"
+				args = append(args, id)
+			}
+			query = query.Where(sql, args...)
+		}
+	}
+
+	// 2. Filter by Role
+	if filter.Role != "" {
+		query = query.Where("role = ?", filter.Role)
+	}
+
+	// 3. Sorting
+	if filter.SortBy != "" {
+		sortParams := strings.Split(filter.SortBy, ":")
+		if len(sortParams) == 2 {
+			field := sortParams[0]
+			order := strings.ToUpper(sortParams[1])
+			
+			// Validate Order
+			if order != "ASC" && order != "DESC" {
+				order = "ASC"
+			}
+
+			// Validate Field (Whitelisting to prevent SQL injection)
+			allowedFields := map[string]string{
+				"id":         "id",
+				"name":       "name",
+				"email":      "email",
+				"role":       "role",
+				"created_at": "created_at",
+			}
+
+			if dbField, ok := allowedFields[field]; ok {
+				query = query.Order(fmt.Sprintf("%s %s", dbField, order))
+			}
+		}
+	} else {
+		// Default sort
+		query = query.Order("id ASC")
+	}
+
+	// Count total records (before pagination)
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	// Fetch paginated records
-	if err := r.db.Offset(offset).Limit(limit).Find(&users).Error; err != nil {
+	// 4. Pagination
+	offset := (filter.Page - 1) * filter.Limit
+	if err := query.Offset(offset).Limit(filter.Limit).Find(&users).Error; err != nil {
 		return nil, 0, err
 	}
 
