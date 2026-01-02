@@ -1,34 +1,34 @@
 import sys
 import os
+import time
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from utils import send_and_print, BASE_URL, save_config
+
+# Generate a unique email to avoid conflict
+unique_id = int(time.time())
+email = f"testuser_{unique_id}@example.com"
+
+print(f"--- REGISTERING NEW USER: {email} ---")
 
 url = f"{BASE_URL}/auth/register"
 
 payload = {
-    "name": "Super Admin",
-    "email": "admin@example.com",
+    "name": "Test User Automator",
+    "email": email,
     "password": "password123",
-    "role": "admin" 
-}
-
-headers = {
-    "Content-Type": "application/json"
+    "role": "user",
 }
 
 response = send_and_print(
     url=url,
     method="POST",
-    headers=headers,
     body=payload,
-    output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json",
-    print_pretty_response=True
+    output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
 )
 
-if response and response.status_code == 201:
+# Optional: Save tokens if you want to use this user immediately
+if response.status_code == 201:
     data = response.json()
-    # Save tokens for next scripts
-    save_config("access_token", data['tokens']['access']['token'])
-    save_config("refresh_token", data['tokens']['refresh']['token'])
-    save_config("user_id", str(data['user']['id']))
-    print("\n[INFO] Tokens and User ID saved to secrets.json")
+    save_config("accessToken", data['tokens']['access']['token'])
+    save_config("refreshToken", data['tokens']['refresh']['token'])
+    print(">>> Registration successful. Tokens saved to secrets.json.")
